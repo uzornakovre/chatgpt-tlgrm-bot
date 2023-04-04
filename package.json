@@ -2,10 +2,10 @@
   "name": "chatgpt-tlgrm-bot",
   "description": "ChatGPT Telegram Bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon app.js",
+    "start": "node app.js",
     "lint": "npx eslint ."
   },
   "keywords": [],
