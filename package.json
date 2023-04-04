@@ -12,11 +12,13 @@
   "author": "Konstantin Filyaev",
   "license": "MIT",
   "dependencies": {
-    "node-telegram-bot-api": "^0.61.0"
+    "dotenv": "^16.0.3",
+    "node-telegram-bot-api": "^0.61.0",
+    "openai": "^3.2.1"
   },
   "devDependencies": {
     "eslint": "^8.37.0",
-    "eslint-config-standard": "^17.0.0",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
     "nodemon": "^2.0.22"
   }
