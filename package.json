@@ -1,0 +1,23 @@
+{
+  "name": "chatgpt-tlgrm-bot",
+  "description": "ChatGPT Telegram Bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "lint": "npx eslint ."
+  },
+  "keywords": [],
+  "author": "Konstantin Filyaev",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.37.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "nodemon": "^2.0.22"
+  }
+}
