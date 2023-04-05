@@ -25,6 +25,9 @@ const start = () => {
 bot.on('message', async (msg) => {
   const { text, chat } = msg;
   const chatId = chat.id;
+  const waitMessage = '...';
+
+  bot.sendMessage(chatId, waitMessage);
 
   try {
     const completion = await openai.createChatCompletion({
