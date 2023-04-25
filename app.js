@@ -25,9 +25,13 @@ const start = () => {
 bot.on('message', async (msg) => {
   const { text, chat } = msg;
   const chatId = chat.id;
-  const waitMessage = '...';
+  const waitMessage = 'Думаю...';
+  let waitMessageId;
 
-  bot.sendMessage(chatId, waitMessage);
+  bot.sendMessage(chatId, waitMessage)
+    .then((message) => {
+      waitMessageId = message.message_id;
+    });
 
   try {
     const completion = await openai.createChatCompletion({
@@ -47,7 +51,7 @@ bot.on('message', async (msg) => {
       );
     }
 
-    return bot.sendMessage(chatId, output);
+    return bot.editMessageText(output, { chat_id: chatId, message_id: waitMessageId });
   } catch (err) {
     return bot.sendMessage(chatId, `Произошла ошибка: ${err}`);
   }
