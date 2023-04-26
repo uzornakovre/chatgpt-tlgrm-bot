@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const TelegramApi = require('node-telegram-bot-api');
 const { Configuration, OpenAIApi } = require('openai');
 const { OPENAI_API_KEY, TELEGRAM_BOT_API_KEY } = require('./config');
@@ -19,8 +20,20 @@ const start = () => {
       command: '/info',
       description: 'Информация',
     },
+    {
+      command: '/clear',
+      description: 'Очистить контекст',
+    },
   ]);
 };
+
+let history = [];
+let messages = [];
+
+for (const [text, output] of history) {
+  messages.push({ role: 'user', content: text });
+  messages.push({ role: 'assistant', content: output });
+}
 
 bot.on('message', async (msg) => {
   const { text, chat } = msg;
@@ -33,12 +46,18 @@ bot.on('message', async (msg) => {
       waitMessageId = message.message_id;
     });
 
+  messages.push({ role: 'user', content: text });
+
   try {
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: text }],
+      messages,
     });
     const output = completion.data.choices[0].message.content;
+
+    messages.push({ role: 'assistant', content: output });
+    history.push([text, output]);
+
     const options = {
       chat_id: chatId,
       message_id: waitMessageId,
@@ -56,6 +75,11 @@ bot.on('message', async (msg) => {
         `Версия ChatGPT: 3.5\nВаше имя: ${msg.from.first_name}\nВаш никнейм: ${msg.from.username}`,
         options,
       );
+    }
+    if (text === '/clear') {
+      history = [];
+      messages = [];
+      return bot.editMessageText('Контекст очищен. Можете начать новый диалог.', options);
     }
 
     return bot.editMessageText(output, options);
