@@ -24,6 +24,10 @@ const start = () => {
       command: '/clear',
       description: 'Очистить контекст',
     },
+    {
+      command: '/help',
+      description: 'Сообщить о проблеме',
+    },
   ]);
 };
 
@@ -80,6 +84,9 @@ bot.on('message', async (msg) => {
       history = [];
       messages = [];
       return bot.editMessageText('Контекст очищен. Можете начать новый диалог.', options);
+    }
+    if (text === '/help') {
+      return bot.editMessageText('Если у вас возникла проблема с ботом, напишите разработчику: @uzornakovre_official', options);
     }
 
     return bot.editMessageText(output, options);
