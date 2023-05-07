@@ -31,12 +31,14 @@ const start = () => {
   ]);
 };
 
-let history = [];
-let messages = [];
+const history = {};
+const messages = {};
 
-for (const [text, output] of history) {
-  messages.push({ role: 'user', content: text });
-  messages.push({ role: 'assistant', content: output });
+function pushMessages(chatId) {
+  for (const [text, output] of history[chatId]) {
+    messages[chatId].push({ role: 'user', content: text });
+    messages[chatId].push({ role: 'assistant', content: output });
+  }
 }
 
 bot.on('message', async (msg) => {
@@ -45,27 +47,35 @@ bot.on('message', async (msg) => {
   const waitMessage = 'Думаю...';
   let waitMessageId;
 
+  if (!history[chatId]) {
+    history[chatId] = [];
+    messages[chatId] = [];
+  }
+
+  pushMessages(chatId);
+
   bot.sendMessage(chatId, waitMessage)
     .then((message) => {
       waitMessageId = message.message_id;
     });
 
-  messages.push({ role: 'user', content: text });
+  messages[chatId].push({ role: 'user', content: text });
 
   try {
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages,
+      messages: messages[chatId],
     });
-    const output = completion.data.choices[0].message.content;
-
-    messages.push({ role: 'assistant', content: output });
-    history.push([text, output]);
 
     const options = {
       chat_id: chatId,
       message_id: waitMessageId,
     };
+
+    const output = completion.data.choices[0].message.content;
+
+    messages[chatId].push({ role: 'assistant', content: output });
+    history[chatId].push([text, output]);
 
     if (text === '/start') {
       await bot.sendSticker(chatId, 'https://tlgrm.ru/_/stickers/22c/b26/22cb267f-a2ab-41e4-8360-fe35ac048c3b/7.webp');
@@ -81,8 +91,8 @@ bot.on('message', async (msg) => {
       );
     }
     if (text === '/clear') {
-      history = [];
-      messages = [];
+      history[chatId] = [];
+      messages[chatId] = [];
       return bot.editMessageText('Контекст очищен. Можете начать новый диалог.', options);
     }
     if (text === '/help') {
@@ -91,7 +101,13 @@ bot.on('message', async (msg) => {
 
     return bot.editMessageText(output, options);
   } catch (err) {
-    return bot.sendMessage(chatId, `Произошла ошибка: ${err}`);
+    if (err.response.status === 429) {
+      return bot.sendMessage(
+        chatId,
+        `Ошибка ${err.response.status}. Cлишком много запросов на сервер в данный момент времени, подождите немного и отправьте ваш вопрос заново`,
+      );
+    }
+    return bot.sendMessage(chatId, `Произошла ошибка: ${err}. Для оперативного решения предлагаю святься с разработчиком, выбрав соответствующий пункт меню`);
   }
 });
 
