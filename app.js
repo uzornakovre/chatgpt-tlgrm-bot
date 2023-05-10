@@ -104,11 +104,6 @@ bot.on('message', async (msg) => {
         options,
       );
     }
-    // if (text === '/clear') {
-    //   history[chatId] = [];
-    //   messages[chatId] = [];
-    //   return bot.editMessageText('Контекст очищен. Можете начать новый диалог.', options);
-    // }
 
     return bot.editMessageText(output, options);
   } catch (err) {
@@ -121,7 +116,7 @@ bot.on('message', async (msg) => {
     if (err.response.status === 400) {
       return bot.sendMessage(
         chatId,
-        `Ошибка ${err.response.status}`,
+        `Ошибка ${err.response.status}. ${err.response.data.error.message} СООБЩИТЬ ОБ ОШИБКЕ: /help`,
       );
     }
     return bot.sendMessage(chatId, `Произошла ошибка: ${err}. Для оперативного решения предлагаю святься с разработчиком, выбрав соответствующий пункт меню`);
