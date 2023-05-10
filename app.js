@@ -107,6 +107,12 @@ bot.on('message', async (msg) => {
         `Ошибка ${err.response.status}. Cлишком много запросов на сервер в данный момент времени, подождите немного и отправьте ваш вопрос заново`,
       );
     }
+    if (err.response.status === 400) {
+      return bot.sendMessage(
+        chatId,
+        `Ошибка ${err.response.status}`,
+      );
+    }
     return bot.sendMessage(chatId, `Произошла ошибка: ${err}. Для оперативного решения предлагаю святься с разработчиком, выбрав соответствующий пункт меню`);
   }
 });
