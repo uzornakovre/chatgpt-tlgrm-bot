@@ -59,7 +59,7 @@ bot.on('message', async (msg) => {
   bot.sendMessage(chatId, toolTips.waitMessage)
     .then((message) => {
       waitMessageId = message.message_id;
-    });
+    }).then(() => bot.sendChatAction(chatId, 'typing'));
 
   messages[chatId].push({ role: 'user', content: text });
 
@@ -73,12 +73,8 @@ bot.on('message', async (msg) => {
     messages[chatId].push({ role: 'assistant', content: output });
     history[chatId].push([text, output]);
 
-    const options = {
-      chat_id: chatId,
-      message_id: waitMessageId,
-    };
-
-    return bot.editMessageText(output, options);
+    await bot.deleteMessage(chatId, waitMessageId);
+    return bot.sendMessage(chatId, output);
   } catch (err) {
     if (err.response.status === 429) {
       return bot.sendMessage(chatId, errorMessages[429](err.response.status));
