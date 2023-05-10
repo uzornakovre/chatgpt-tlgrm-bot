@@ -62,20 +62,10 @@ bot.on('message', async (msg) => {
   messages[chatId].push({ role: 'user', content: text });
 
   try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: messages[chatId],
-    });
-
     const options = {
       chat_id: chatId,
       message_id: waitMessageId,
     };
-
-    const output = completion.data.choices[0].message.content;
-
-    messages[chatId].push({ role: 'assistant', content: output });
-    history[chatId].push([text, output]);
 
     if (text === '/start') {
       await bot.sendSticker(chatId, 'https://tlgrm.ru/_/stickers/22c/b26/22cb267f-a2ab-41e4-8360-fe35ac048c3b/7.webp');
@@ -99,8 +89,19 @@ bot.on('message', async (msg) => {
       return bot.editMessageText('Если у вас возникла проблема с ботом, напишите разработчику: @uzornakovre_official', options);
     }
 
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: messages[chatId],
+    });
+
+    const output = completion.data.choices[0].message.content;
+
+    messages[chatId].push({ role: 'assistant', content: output });
+    history[chatId].push([text, output]);
+
     return bot.editMessageText(output, options);
   } catch (err) {
+    console.log(err.response);
     if (err.response.status === 429) {
       return bot.sendMessage(
         chatId,
