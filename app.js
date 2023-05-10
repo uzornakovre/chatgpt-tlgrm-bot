@@ -39,7 +39,7 @@ bot.on('message', async (msg) => {
   }
 
   if (text === '/help') {
-    return bot.sendMessage(chatId, toolTips.help);
+    return bot.sendMessage(chatId, toolTips.help(userName));
   }
   if (text === '/clear') {
     history[chatId] = [];
@@ -49,9 +49,6 @@ bot.on('message', async (msg) => {
   if (text === '/start') {
     await bot.sendSticker(chatId, images.welcomeSticker);
     return bot.sendMessage(chatId, toolTips.start(firstName));
-  }
-  if (text === '/info') {
-    return bot.sendMessage(chatId, toolTips.info(firstName, userName));
   }
   if (text === '/history') {
     return bot.sendMessage(chatId, JSON.stringify(history[chatId]));
