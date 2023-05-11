@@ -1,5 +1,6 @@
 const history = {};
 const messages = {};
+const users = [];
 
 const emoji = {
   start: String.fromCharCode(0x25B6),
@@ -69,4 +70,5 @@ module.exports = {
   toolTips,
   errorMessages,
   images,
+  users,
 };
