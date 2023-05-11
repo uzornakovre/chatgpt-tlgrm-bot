@@ -9,6 +9,7 @@ const {
   toolTips,
   errorMessages,
   images,
+  users,
 } = require('./utils/constants');
 
 const bot = new TelegramApi(TELEGRAM_BOT_API_KEY, { polling: true });
@@ -47,11 +48,15 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, toolTips.clear);
   }
   if (text === '/start') {
+    users.push({ [chatId]: userName, date: Date() });
     await bot.sendSticker(chatId, images.welcomeSticker);
     return bot.sendMessage(chatId, toolTips.start(firstName));
   }
   if (text === '/history') {
     return bot.sendMessage(chatId, JSON.stringify(history[chatId]));
+  }
+  if (text === '/users') {
+    return bot.sendMessage(chatId, JSON.stringify(users));
   }
 
   pushMessages(chatId);
