@@ -1,7 +1,9 @@
 /* eslint-disable no-restricted-syntax */
+const mongoose = require('mongoose');
 const TelegramApi = require('node-telegram-bot-api');
 const { Configuration, OpenAIApi } = require('openai');
-const { OPENAI_API_KEY, TELEGRAM_BOT_API_KEY } = require('./config');
+const { OPENAI_API_KEY, TELEGRAM_BOT_API_KEY, DB_ADDRESS } = require('./config');
+const User = require('./models/user');
 const {
   commands,
   history,
@@ -9,12 +11,13 @@ const {
   toolTips,
   errorMessages,
   images,
-  users,
 } = require('./utils/constants');
 
 const bot = new TelegramApi(TELEGRAM_BOT_API_KEY, { polling: true });
 const configuration = new Configuration({ apiKey: OPENAI_API_KEY });
 const openai = new OpenAIApi(configuration);
+
+mongoose.connect(DB_ADDRESS);
 
 function start() {
   bot.setMyCommands(commands);
@@ -31,6 +34,7 @@ bot.on('message', async (msg) => {
   const { text, chat, from } = msg;
   const chatId = chat.id;
   const firstName = from.first_name;
+  const lastName = from.last_name;
   const userName = from.username;
   let waitMessageId;
 
@@ -48,7 +52,17 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, toolTips.clear);
   }
   if (text === '/start') {
-    users.push({ [chatId]: userName, date: Date() });
+    User.findOne({ chatId }).then((res) => {
+      if (!res) {
+        User.create({
+          chatId,
+          userName: userName || 'noName',
+          firstName: firstName || '',
+          lastName: lastName || '',
+          date: Date(),
+        });
+      }
+    });
     await bot.sendSticker(chatId, images.welcomeSticker);
     return bot.sendMessage(chatId, toolTips.start(firstName));
   }
@@ -56,7 +70,7 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, JSON.stringify(history[chatId]));
   }
   if (text === '/users') {
-    return bot.sendMessage(chatId, JSON.stringify(users));
+    return User.find({}).then((users) => bot.sendMessage(chatId, JSON.stringify(users)));
   }
 
   pushMessages(chatId);
