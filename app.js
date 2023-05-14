@@ -87,10 +87,18 @@ bot.on('message', async (msg) => {
       model: 'gpt-3.5-turbo',
       messages: messages[chatId],
     });
+
     const output = completion.data.choices[0].message.content;
 
     messages[chatId].push({ role: 'assistant', content: output });
     history[chatId].push([text, output]);
+
+    if (completion.data.choices[0].finish_reason === 'length' || output.length > 4096) {
+      history[chatId] = [];
+      messages[chatId] = [];
+      await bot.deleteMessage(chatId, waitMessageId);
+      return bot.sendMessage(chatId, errorMessages.TOKEN_LENGTH);
+    }
 
     await bot.deleteMessage(chatId, waitMessageId);
     return bot.sendMessage(chatId, output);
