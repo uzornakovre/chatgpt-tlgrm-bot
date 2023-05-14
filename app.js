@@ -2,7 +2,14 @@
 const mongoose = require('mongoose');
 const TelegramApi = require('node-telegram-bot-api');
 const { Configuration, OpenAIApi } = require('openai');
-const { OPENAI_API_KEY, TELEGRAM_BOT_API_KEY, DB_ADDRESS } = require('./config');
+const {
+  OPENAI_API_KEY,
+  TELEGRAM_BOT_API_KEY,
+  DB_ADDRESS,
+  MESSAGE_ALERT,
+  MESSAGE_HISTORY,
+  MESSAGE_USERS,
+} = require('./config');
 const User = require('./models/user');
 const {
   commands,
@@ -11,6 +18,7 @@ const {
   toolTips,
   errorMessages,
   images,
+  alerts,
 } = require('./utils/constants');
 
 const bot = new TelegramApi(TELEGRAM_BOT_API_KEY, { polling: true });
@@ -42,9 +50,15 @@ bot.on('message', async (msg) => {
     history[chatId] = [];
     messages[chatId] = [];
   }
-
   if (text === '/help') {
     return bot.sendMessage(chatId, toolTips.help(userName));
+  }
+  if (text === MESSAGE_ALERT) {
+    return User.find({}).then((users) => {
+      users.forEach((user) => {
+        bot.sendMessage(user.chatId, alerts.TEST);
+      });
+    });
   }
   if (text === '/clear') {
     history[chatId] = [];
@@ -66,10 +80,10 @@ bot.on('message', async (msg) => {
     await bot.sendSticker(chatId, images.welcomeSticker);
     return bot.sendMessage(chatId, toolTips.start(firstName));
   }
-  if (text === '/history') {
+  if (text === MESSAGE_HISTORY) {
     return bot.sendMessage(chatId, JSON.stringify(history[chatId]));
   }
-  if (text === '/users') {
+  if (text === MESSAGE_USERS) {
     return User.find({}).then((users) => bot.sendMessage(chatId, JSON.stringify(users)));
   }
 

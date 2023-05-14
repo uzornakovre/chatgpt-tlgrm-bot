@@ -61,6 +61,10 @@ Cлишком много запросов на сервер в данный мо
 подождите немного и отправьте ваш вопрос заново`,
 };
 
+const alerts = {
+  TEST: 'Тестовое оповещение от @uzornakovre_official. Приношу извинения за беспокойство.',
+};
+
 const images = {
   welcomeSticker: 'https://tlgrm.ru/_/stickers/22c/b26/22cb267f-a2ab-41e4-8360-fe35ac048c3b/7.webp',
 };
@@ -72,4 +76,5 @@ module.exports = {
   toolTips,
   errorMessages,
   images,
+  alerts,
 };
