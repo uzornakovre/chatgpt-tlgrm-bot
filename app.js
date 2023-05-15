@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-restricted-syntax */
 const mongoose = require('mongoose');
 const TelegramApi = require('node-telegram-bot-api');
@@ -38,6 +39,27 @@ function pushMessages(chatId) {
   }
 }
 
+async function sendLongMessage(chatId, output) {
+  const maxLength = 4096;
+  const outputArray = [];
+  let outputText = output;
+
+  while (outputText.length > maxLength) {
+    let pos = outputText.substring(0, maxLength).lastIndexOf(' ');
+    pos = pos <= 0 ? maxLength : pos;
+    outputArray.push(outputText.substring(0, pos));
+    const len = outputText.length;
+    outputText = outputText.substring(pos, len);
+  }
+  outputArray.push(outputText);
+
+  for (let i = 0; i < outputArray.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    await bot.sendMessage(chatId, outputArray[i], { parse_mode: 'HTML' });
+  }
+}
+
+// eslint-disable-next-line consistent-return
 bot.on('message', async (msg) => {
   const { text, chat, from } = msg;
   const chatId = chat.id;
@@ -56,7 +78,7 @@ bot.on('message', async (msg) => {
   if (text === MESSAGE_ALERT) {
     return User.find({}).then((users) => {
       users.forEach((user) => {
-        bot.sendMessage(user.chatId, alerts.TEST);
+        bot.sendMessage(user.chatId, alerts.UPDATE);
       });
     });
   }
@@ -107,18 +129,17 @@ bot.on('message', async (msg) => {
     messages[chatId].push({ role: 'assistant', content: output });
     history[chatId].push([text, output]);
 
-    if (completion.data.choices[0].finish_reason === 'length' || output.length > 4096) {
+    await bot.deleteMessage(chatId, waitMessageId);
+    sendLongMessage(chatId, output);
+  } catch (err) {
+    if (err.response.status === 429) {
+      return bot.sendMessage(chatId, errorMessages.TOO_MANY_REQUESTS(err.response.status));
+    }
+    if (err.response.data.error.code === 'context_length_exceeded') {
       history[chatId] = [];
       messages[chatId] = [];
       await bot.deleteMessage(chatId, waitMessageId);
       return bot.sendMessage(chatId, errorMessages.TOKEN_LENGTH);
-    }
-
-    await bot.deleteMessage(chatId, waitMessageId);
-    return bot.sendMessage(chatId, output);
-  } catch (err) {
-    if (err.response.status === 429) {
-      return bot.sendMessage(chatId, errorMessages[429](err.response.status));
     }
     return bot.sendMessage(
       chatId,
