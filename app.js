@@ -78,7 +78,7 @@ bot.on('message', async (msg) => {
   if (text === MESSAGE_ALERT) {
     return User.find({}).then((users) => {
       users.forEach((user) => {
-        bot.sendMessage(user.chatId, alerts.UPDATE);
+        bot.sendMessage(user.chatId, alerts.FIX);
       });
     });
   }
