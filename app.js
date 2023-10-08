@@ -111,16 +111,18 @@ bot.on('message', async (msg) => {
 
   pushMessages(chatId);
 
-  bot.sendMessage(chatId, toolTips.waitMessage)
+  bot
+    .sendMessage(chatId, toolTips.waitMessage)
     .then((message) => {
       waitMessageId = message.message_id;
-    }).then(() => bot.sendChatAction(chatId, 'typing'));
+    })
+    .then(() => bot.sendChatAction(chatId, 'typing'));
 
   messages[chatId].push({ role: 'user', content: text });
 
   try {
     const completion = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-3.5-turbo-16k-0613',
       messages: messages[chatId],
     });
 
@@ -133,7 +135,10 @@ bot.on('message', async (msg) => {
     sendLongMessage(chatId, output);
   } catch (err) {
     if (err.response.status === 429) {
-      return bot.sendMessage(chatId, errorMessages.TOO_MANY_REQUESTS(err.response.status));
+      return bot.sendMessage(
+        chatId,
+        errorMessages.TOO_MANY_REQUESTS(err.response.status),
+      );
     }
     if (err.response.data.error.code === 'context_length_exceeded') {
       history[chatId] = [];
@@ -143,7 +148,10 @@ bot.on('message', async (msg) => {
     }
     return bot.sendMessage(
       chatId,
-      errorMessages.DEFAULT(err.response.status, err.response.data.error.message),
+      errorMessages.DEFAULT(
+        err.response.status,
+        err.response.data.error.message,
+      ),
     );
   }
 });
